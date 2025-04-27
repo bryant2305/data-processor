@@ -1,4 +1,3 @@
-// src/modules/file-upload/file-upload.module.ts
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { FileUploadController } from './file-upload.controller';
