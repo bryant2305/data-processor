@@ -7,7 +7,6 @@ import { BullModule } from '@nestjs/bull';
 
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { ProcessingModule } from './modules/processing/processing.module';
-import { WebsocketModule } from './modules/websocket/websocket.module';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
@@ -22,7 +21,6 @@ import { APP_GUARD } from '@nestjs/core';
         },
       ],
     }),
-    // ... otros imports
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -41,7 +39,6 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     FileUploadModule,
     ProcessingModule,
-    WebsocketModule,
   ],
   providers: [
     {

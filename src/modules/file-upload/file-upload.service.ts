@@ -1,18 +1,20 @@
 // src/modules/file-upload/file-upload.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as fs from 'fs';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { FileProcessor } from '../interfaces/file-processor.interface';
 import { CsvProcessor } from '../file-upload/strategies/csv.processor';
 import { XlsxProcessor } from '../file-upload/strategies/xlsx.processor';
+import { FileCleaner } from './strategies/file-cleaner/file-cleaner.service';
+import { NotificationService } from '../notification/notification.service';
+import { ProcessingQueueManager } from './strategies/queue-records/records-queue.service';
 
 @Injectable()
 export class FileUploadService {
   private processors: Map<string, FileProcessor> = new Map();
 
   constructor(
-    @InjectQueue('processing') private readonly processingQueue: Queue,
+    private readonly processingQueue: ProcessingQueueManager,
+    private readonly notificationService: NotificationService,
+    private readonly cleanupFile: FileCleaner,
     csvProcessor: CsvProcessor,
     xlsxProcessor: XlsxProcessor,
   ) {
@@ -25,27 +27,22 @@ export class FileUploadService {
     const processor = this.processors.get(extension);
 
     if (!processor) {
-      this.cleanupFile(filePath);
+      this.cleanupFile.cleanup(filePath);
       throw new BadRequestException('Unsupported file format.');
     }
 
     try {
       const records = await processor.process(filePath);
-      await this.addRecordsToQueue(records);
+      await this.processingQueue.addRecords(records);
+      this.notificationService.notifyProcessingFinished({
+        message: 'Processing finished',
+        recordsProcessed: records.length,
+        timestamp: new Date(),
+      });
     } catch (error) {
       throw new BadRequestException(error.message);
     } finally {
-      this.cleanupFile(filePath);
+      this.cleanupFile.cleanup(filePath);
     }
-  }
-
-  private async addRecordsToQueue(records: any[]) {
-    for (const record of records) {
-      await this.processingQueue.add('process-record', record);
-    }
-  }
-
-  private cleanupFile(filePath: string) {
-    fs.unlink(filePath, () => {});
   }
 }
