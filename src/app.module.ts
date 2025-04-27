@@ -2,12 +2,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bull';
 
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { ProcessingModule } from './modules/processing/processing.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -15,11 +16,13 @@ import { WebsocketModule } from './modules/websocket/websocket.module';
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: parseInt(process.env.RATE_LIMIT_TTL || '60'), // Valor por defecto 60 segundos
-          limit: parseInt(process.env.RATE_LIMIT_LIMIT || '10'), // Valor por defecto 10 peticiones
+          name: 'file-upload',
+          limit: 1, // 1 solicitud
+          ttl: 60000, // 60,000 ms = 1 minuto
         },
       ],
     }),
+    // ... otros imports
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -39,6 +42,12 @@ import { WebsocketModule } from './modules/websocket/websocket.module';
     FileUploadModule,
     ProcessingModule,
     WebsocketModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

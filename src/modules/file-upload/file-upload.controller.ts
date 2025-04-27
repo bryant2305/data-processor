@@ -12,12 +12,19 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, Multer } from 'multer';
 import { extname } from 'path';
 import { FileUploadService } from './file-upload.service';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post()
+  @Throttle({
+    'file-upload': {
+      limit: 1,
+      ttl: 60000,
+    },
+  })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
