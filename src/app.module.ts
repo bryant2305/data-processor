@@ -6,7 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bull';
 
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
-import { ProcessingModule } from './modules/processing/processing.module';
+import { ProcessingModule } from './modules/processing-record/processing-record.module';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
