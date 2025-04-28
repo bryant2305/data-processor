@@ -63,3 +63,5 @@ curl --location 'http://localhost:3000/upload' \
 --form 'file=@"/Users/bryantperez/Downloads/reporteprueba.xlsx"'
 
 y en el apartado de body ponen el file.
+
+![image](https://github.com/user-attachments/assets/86164110-137c-422e-a853-13614d3ab795)
