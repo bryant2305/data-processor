@@ -1,3 +1,4 @@
+import { RecordData } from 'src/modules/interfaces/record-data.interface';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -14,7 +15,7 @@ export class Record {
   file_name: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  data: any;
+  data: RecordData;
 
   @CreateDateColumn()
   created_at: Date;
